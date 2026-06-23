@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>محافظة خيبر</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+<style>
+:root{
+  --c1:#1F6F5F;--c2:#2FA084;--c3:#6FCF97;
+  --bg:#EEEEEE;--surface:#fff;--border:#c8dcd8;
+  --txt:#0D2420;--muted:#3d6b62;
+  --font:'Tajawal',sans-serif;
+  --r:10px;--shadow:0 2px 12px rgba(11,61,94,.10);
+  --toc-w:230px;--topbar-h:52px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font);background:var(--bg);color:var(--txt);line-height:1.75;overflow-x:hidden;}
+#topbar{position:fixed;top:0;right:0;left:0;z-index:200;height:var(--topbar-h);background:var(--c1);display:flex;align-items:center;padding:0 1.25rem;box-shadow:0 2px 8px rgba(0,0,0,.25);}
+#topbar .tb-title{font-size:1.35rem;font-weight:800;color:#fff;flex:1;}
+#toc-toggle{display:none;align-items:center;justify-content:center;width:36px;height:36px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:6px;cursor:pointer;color:#fff;font-size:1.1rem;transition:.2s;flex-shrink:0;}
+#toc-toggle:hover{background:rgba(255,255,255,.25);}
+#shell{display:flex;flex-direction:row;min-height:100vh;padding-top:var(--topbar-h);}
+#content{flex:1;min-width:0;padding:2rem 2rem 5rem;margin-right:var(--toc-w);}
+section{margin-bottom:3.5rem;scroll-margin-top:calc(var(--topbar-h) + 16px);}
+#toc{position:fixed;top:var(--topbar-h);right:0;bottom:0;width:var(--toc-w);background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;z-index:150;padding:1rem 0 2rem;transition:transform .3s ease;}
+#toc::-webkit-scrollbar{width:4px;}
+#toc::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.toc-item{display:block;padding:.55rem 1.1rem .55rem 1rem;font-size:.82rem;font-weight:500;color:var(--muted);text-decoration:none;border-right:3px solid transparent;transition:.18s;line-height:1.4;}
+.toc-item:hover{color:var(--c2);background:rgba(47,160,132,.06);}
+.toc-item.active{color:var(--c1);font-weight:700;border-right-color:var(--c3);background:rgba(47,160,132,.08);}
+.toc-item.active::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--c3);margin-left:.55rem;vertical-align:middle;margin-bottom:1px;}
+#toc-overlay{display:none;position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.4);opacity:0;transition:opacity .3s;}
+#toc-overlay.open{display:block;opacity:1;}
+.sec-head{font-size:1.15rem;font-weight:800;color:var(--c1);padding-bottom:.65rem;margin-bottom:1.5rem;border-bottom:2px solid var(--c3);}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.25rem;margin-bottom:1.5rem;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem 1.75rem;box-shadow:var(--shadow);border-top:4px solid var(--c2);transition:transform .18s,box-shadow .18s;}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(11,61,94,.14);}
+.stat-card .num{font-size:2.2rem;font-weight:800;color:var(--c1);line-height:1;}
+.stat-card .unit{font-size:.95rem;font-weight:600;color:var(--c2);margin-right:.3rem;}
+.stat-card .label{font-size:.92rem;font-weight:700;color:var(--txt);margin:.4rem 0 .2rem;}
+.stat-card .note{font-size:.78rem;color:var(--muted);line-height:1.55;}
+.tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow);}
+table{width:100%;border-collapse:collapse;font-size:.9rem;}
+thead tr{background:var(--c1);color:#fff;}
+thead th{padding:.8rem 1rem;text-align:right;font-weight:600;white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--border);}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:#d8f0ea;}
+tbody td{padding:.75rem 1rem;color:var(--txt);}
+tbody td:first-child{font-weight:600;}
+tfoot tr{background:#d8f0ea;font-weight:700;}
+tfoot td{padding:.75rem 1rem;border-top:2px solid var(--c2);}
+.pb{display:flex;align-items:center;gap:.5rem;}
+.pb-track{flex:1;height:7px;background:var(--border);border-radius:100px;min-width:60px;}
+.pb-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--c2),var(--c3));}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;box-shadow:var(--shadow);}
+.chart-title{font-size:.9rem;font-weight:700;color:var(--c1);margin-bottom:.85rem;}
+.chart-box{width:100%;height:280px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+.route-block{background:linear-gradient(135deg,var(--c1),var(--c2));color:#fff;border-radius:var(--r);padding:1.75rem 2rem;box-shadow:0 4px 18px rgba(31,111,95,.3);margin-bottom:1.25rem;}
+.route-block .r-num{font-size:1.3rem;font-weight:800;line-height:1.2;}
+.route-block .rp-key{font-size:.82rem;opacity:.85;margin-top:.5rem;line-height:1.75;max-width:580px;}
+.info-text{background:var(--surface);border-right:4px solid var(--c3);border-radius:0 var(--r) var(--r) 0;padding:1.1rem 1.25rem;font-size:.9rem;color:var(--muted);line-height:1.8;box-shadow:var(--shadow);margin-bottom:1.25rem;}
+.invest-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.25rem;margin-bottom:1.5rem;}
+.invest-card{background:linear-gradient(135deg,var(--c1),var(--c2));color:#fff;border-radius:var(--r);padding:1.4rem 1.6rem;box-shadow:0 4px 16px rgba(31,111,95,.28);}
+.invest-card .in{font-size:2rem;font-weight:800;line-height:1;}
+.invest-card .iu{font-size:.88rem;font-weight:600;margin-right:.2rem;opacity:.85;}
+.invest-card .il{font-size:.85rem;font-weight:600;margin-top:.3rem;opacity:.9;}
+@media(max-width:900px){:root{--toc-w:260px;}#toc{transform:translateX(100%);box-shadow:none;border-right:none;border-left:1px solid var(--border);}#toc.open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,.18);}#content{margin-right:0;}#toc-toggle{display:flex;}}
+@media(max-width:680px){.two-col{grid-template-columns:1fr;}.stat-card .num{font-size:1.8rem;}#content{padding:1.25rem 1rem 4rem;}}
+</style>
+</head>
+<body>
+<header id="topbar">
+  <div class="tb-title">محافظة خيبر</div>
+  <button id="toc-toggle" aria-label="فتح قائمة المحتويات" aria-expanded="false" aria-controls="toc">&#9776;</button>
+</header>
+<div id="toc-overlay" aria-hidden="true"></div>
+<div id="shell">
+<main id="content">
+
+<!-- S2 — المساحة -->
+<section id="s2">
+  <div class="sec-head">المساحة</div>
+  <div class="two-col">
+    <div class="stat-card" style="align-self:start;">
+      <div class="num">19,108<span class="unit"> كم²</span></div>
+      <div class="label">المساحة الإجمالية</div>
+      <div class="note">تمثل 13.33 % من إجمالي مساحة منطقة المدينة المنورة</div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">المساحة — نسبة محافظة خيبر من منطقة المدينة المنورة</div>
+      <div class="chart-box" id="c-area"></div>
+    </div>
+  </div>
+</section>
+
+<!-- S3 — حجم السكان -->
+<section id="s3">
+  <div class="sec-head">حجم السكان</div>
+  <div class="two-col">
+    <div class="stat-card" style="align-self:start;">
+      <div class="num">45,532<span class="unit"> نسمة</span></div>
+      <div class="label">حجم السكان</div>
+      <div class="note">تمثل 2.13 % من إجمالي حجم سكان منطقة المدينة المنورة</div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">عدد السكان — نسبة محافظة خيبر من منطقة المدينة المنورة</div>
+      <div class="chart-box" id="c-pop"></div>
+    </div>
+  </div>
+</section>
+
+<!-- S4 — النطاق الإشرافي البلدي -->
+<section id="s4">
+  <div class="sec-head">النطاق الإشرافي البلدي</div>
+  <div class="two-col">
+    <div class="tbl-wrap" style="align-self:start;">
+      <table>
+        <thead><tr><th>م</th><th>اسم البلدية</th><th>المساحة كم²</th><th>النسبة</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>بلدية محافظة خيبر</td><td>7,050</td><td><div class="pb"><div class="pb-track"><div class="pb-fill" style="width:36.90%"></div></div>36.90%</div></td></tr>
+          <tr><td>2</td><td>بلدية العشاش</td><td>7,836</td><td><div class="pb"><div class="pb-track"><div class="pb-fill" style="width:41.01%"></div></div>41.01%</div></td></tr>
+          <tr><td>3</td><td>بلدية الصلصلة</td><td>4,221</td><td><div class="pb"><div class="pb-track"><div class="pb-fill" style="width:22.09%"></div></div>22.09%</div></td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="2">اجمالي المساحة</td><td>19,108</td><td>100%</td></tr></tfoot>
+      </table>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">نسبة مساحة البلديات</div>
+      <div class="chart-box" id="c-municipal"></div>
+    </div>
+  </div>
+</section>
+
+<!-- S5 — النطاق الإشرافي الإداري -->
+<section id="s5">
+  <div class="sec-head">النطاق الإشرافي الإداري</div>
+  <div class="stat-grid">
+    <div class="stat-card" style="border-top-color:var(--c3);">
+      <div class="num">9<span class="unit"> مراكز إمارة</span></div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>م</th><th>إسم المركز</th><th>المساحة كم²</th><th>النسبة</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>مركز الصلصلة</td><td>4,222</td><td><div class="pb"><div class="pb-track"><div class="pb-fill" style="width:23.33%"></div></div>23.33%</div></td></tr>
+          <tr><td>2</td><td>مركز الثمد</td><td>2,918</td><td><div class="pb"><div class="pb-track"><div class="pb-fill" style="width:16.13%"></div></div>16.13%</div></td></tr>
+          <tr><td>3</td><td>نطاق إشراف مدينة خيبر</td><td>2,481</td><td><div class="pb"><div class="pb-track"><div class="pb-fill" style="width:13.71%"></div></div>13.71%</div></td></tr>
+          <tr><td>4</td><td>مركز العشاش</td><td>1,946</td><td><div class="pb"><div class="pb-track"><div class="pb-fill" style="width:10.75%"></div></div>10.75%</div></td></tr>
+          <tr><td>5</td><td>مركز عشرة</td><td>1,776</td><td><div class="pb"><div class="pb-track"><div class="pb-fill" style="width:9.81%"></div></div>9.81%</div></td></tr>
+          <tr><td>6</td><td>مركز الحفيرة</td><td>1,769</td><td><div class="pb"><div class="pb-track"><div class="pb-fill" style="width:9.78%"></div></div>9.78%</div></td></tr>
+          <tr><td>7</td><td>مركز العيينة</td><td>1,652</td><td><div class="pb"><div class="pb-track"><div class="pb-fill" style="width:9.13%"></div></div>9.13%</div></td></tr>
+          <tr><td>8</td><td>مركز جدعاء</td><td>1,332</td><td><div class="pb"><div class="pb-track"><div class="pb-fill" style="width:7.36%"></div></div>7.36%</div></td></tr>
+          <tr><td>9</td><td>مركز العرايد</td><td>1,012</td><td><div class="pb"><div class="pb-track"><div class="pb-fill" style="width:5.60%"></div></div>5.60%</div></td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="2">اجمالي المساحة</td><td>19,108</td><td>100%</td></tr></tfoot>
+      </table>
+    </div>
+    <div class="chart-card">
+      <div class="chart-box" id="c-admin-bar"></div>
+    </div>
+  </div>
+</section>
+
+<!-- S6 — التجمعات العمرانية -->
+<section id="s6">
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="num">63<span class="unit"> تجمع</span></div>
+      <div class="label">عدد التجمعات العمرانية</div>
+      <div class="note">تمثل 7.36 % من إجمالي التجمعات بمنطقة المدينة المنورة</div>
+    </div>
+  </div>
+  <div class="two-col" style="margin-bottom:1.5rem;">
+    <div class="chart-card">
+      <div class="chart-title">نسبة التجمعات بالنسبة للمنطقة</div>
+      <div class="chart-box" id="c-settle-region"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">موقف التجمعات العمرانية</div>
+      <div class="chart-box" id="c-settle-status"></div>
+    </div>
+  </div>
+  <div class="sec-head" style="font-size:1rem;border-bottom-width:1px;">موقف التجمعات العمرانية</div>
+  <div class="tbl-wrap" style="margin-bottom:1.25rem;">
+    <table>
+      <thead>
+        <tr><th>المحافظة</th><th>خارج نطاق العمل</th><th>لم تستوفي مقومات التنمية</th><th>لها أحوزة معتمدة</th><th>جاري اعتماد احوزة لها</th><th>اجمالي عدد التجمعات</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>خيبر</td><td>2</td><td>43</td><td>15</td><td>3</td><td>63</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="info-text">
+    تساعد عملية اعتماد أحوزة التنمية العمرانية على تشجيع التنمية العمرانية والاقتصادية داخل القرى المختارة بما يتوافق مع الرؤية الإقليمية ومحاور تنمية القطاع الريفي.
+  </div>
+</section>
+
+<!-- S7 — التشكيل الطبوغرافي -->
+<section id="s7">
+  <div class="sec-head">التشكيل الطبوغرافي</div>
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="num">11,241<span class="unit"> كم</span></div>
+      <div class="label">أطوال الأودية</div>
+      <div class="note">تمثل 9.3% من إجمالي الأودية بمنطقة المدينة المنورة</div>
+    </div>
+    <div class="stat-card" style="border-top-color:var(--c3);">
+      <div class="num">148<span class="unit"> قمة</span></div>
+      <div class="label">عدد القمم الجبلية</div>
+      <div class="note">تمثل 10.1% من إجمالي القمم الجبلية بمنطقة المدينة المنورة</div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="tbl-wrap" style="align-self:start;">
+      <table>
+        <thead><tr><th>البلدية</th><th>عدد الجبال</th></tr></thead>
+        <tbody>
+          <tr><td>بلدية العشاش</td><td>80</td></tr>
+          <tr><td>بلدية محافظة خيبر</td><td>39</td></tr>
+          <tr><td>بلدية الصلصلة</td><td>29</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">توزيع الجبال بمحافظة خيبر</div>
+      <div class="chart-box" id="c-mountains"></div>
+    </div>
+  </div>
+</section>
+
+<!-- S8 — المعالم التراثية -->
+<section id="s8">
+  <div class="sec-head">المعالم التراثية</div>
+  <div class="stat-grid">
+    <div class="stat-card" style="border-top-color:var(--c1);">
+      <div class="num">589<span class="unit"> مبنى</span></div>
+      <div class="label">مبنى تراثي</div>
+      <div class="note">تمثل 14.8% من إجمالي المباني التراثية بمنطقة المدينة المنورة</div>
+    </div>
+  </div>
+  <div class="two-col" style="margin-bottom:1.5rem;">
+    <div class="tbl-wrap" style="align-self:start;">
+      <table>
+        <thead><tr><th>م</th><th>اسم البلدية</th><th>عدد المواقع التراثية</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>بلدية العشاش</td><td>2</td></tr>
+          <tr><td>2</td><td>بلدية محافظة خيبر</td><td>544</td></tr>
+          <tr><td>3</td><td>بلدية الصلصلة</td><td>43</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="2">الإجمالي</td><td>589</td></tr></tfoot>
+      </table>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">توزيع المباني التراثية بمحافظة خيبر</div>
+      <div class="chart-box" id="c-heritage"></div>
+    </div>
+  </div>
+  <div class="route-block">
+    <div class="r-num">واحة خيبر</div>
+    <div class="rp-key">هي واحة تاريخية تقع بمحافظة خيبر، اشتهرت بوفرة المياه العذبة والنخيل وتابعة للهيئة الملكية لمحافظة للعلا.</div>
+  </div>
+  <div class="route-block">
+    <div class="r-num">النطاه</div>
+    <div class="rp-key">منطقة أثرية محصنة اكتُشفت في واحة خيبر، يعود تاريخها إلى العصر البرونزي، تقريبًا بين 2400 و1300 قبل الميلاد.</div>
+  </div>
+  <div class="route-block">
+    <div class="r-num">الحصون التاريخية</div>
+    <div class="rp-key">اشتهرت خيبر تاريخيًا بكثرة حصونها المنيعة التي بُنيت على المرتفعات الصخرية لحماية واحة خيبر ومزارعها وطرق التجارة (حصن القموص – حصن ناعم – حصن الصعب بن معاذ – حصن أبي – حصن النزار – حصن الوطيح – حصن السلالم – قلعة الزبير).</div>
+  </div>
+</section>
+
+<!-- S9 — المخططات المعتمدة والمواقع الاستثمارية -->
+<section id="s9">
+  <div class="invest-grid" style="margin-bottom:1.5rem;grid-template-columns:repeat(auto-fit,minmax(140px,max-content));">
+    <div class="invest-card">
+      <div class="in">14</div>
+      <div class="il">مخطط معتمد</div>
+    </div>
+  </div>
+  <div class="sec-head">المخططات المعتمدة والمواقع الإستثمارية</div>
+
+  <div style="font-size:1rem;font-weight:700;color:var(--c1);margin-bottom:.85rem;">المخططات المعتمدة الأكبر مساحة</div>
+  <div class="tbl-wrap" style="margin-bottom:1.5rem;">
+    <table>
+      <thead><tr><th>اسم المخطط</th><th>اسم البلدية</th><th>موقع المخطط</th><th>المساحة كم²</th></tr></thead>
+      <tbody>
+        <tr><td>مخطط ذوي الدخل المحدود بخيبر</td><td>بلدية محافظة خيبر</td><td>مدينة خيبر</td><td>3.93</td></tr>
+        <tr><td>مخطط الغزوة</td><td>بلدية محافظة خيبر</td><td>مدينة خيبر</td><td>2.67</td></tr>
+        <tr><td>مخطط المنح (أ) قرية الثمد</td><td>بلدية محافظة خيبر</td><td>قرية الثمد</td><td>2.14</td></tr>
+        <tr><td>المخطط المعدل للحرة الموالية بخيبر</td><td>بلدية محافظة خيبر</td><td>مدينة خيبر</td><td>1.51</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="two-col" style="margin-bottom:1.5rem;">
+    <div class="chart-card">
+      <div class="chart-title">المخططات المعتمدة داخل النطاقات العمرانية</div>
+      <div class="chart-box" id="c-plans"></div>
+    </div>
+    <div>
+      <div style="font-size:1rem;font-weight:700;color:var(--c1);margin-bottom:.85rem;">المواقع الاستثمارية بمدينة خيبر</div>
+      <div class="invest-grid">
+        <div class="invest-card" style="background:linear-gradient(135deg,#145a4c,#2FA084);">
+          <div class="in">6</div>
+          <div class="il">موقع استثماري معتمد</div>
+        </div>
+        <div class="invest-card" style="background:linear-gradient(135deg,#145a4c,#1F6F5F);">
+          <div class="in">6.4<span class="iu"> كم²</span></div>
+          <div class="il">مساحة المواقع الاستثمارية</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-text">
+    تم اعتماد عدد 6 مواقع استثمارية من وزارة البلديات والإسكان على محاور الطرق الرئيسية بالمدينة بما يسهم في تحفيز ودعم تنمية القطاع الغير نفطي وتعزيز الاستدامة المالية للبلديات وزيادة معدلات التنمية الاقتصادية بمدينة ومحافظة خيبر.
+  </div>
+</section>
+
+</main>
+
+<nav id="toc" role="navigation" aria-label="قائمة المحتويات">
+  <a class="toc-item" href="#s2">المساحة</a>
+  <a class="toc-item" href="#s3">حجم السكان</a>
+  <a class="toc-item" href="#s4">النطاق الإشرافي البلدي</a>
+  <a class="toc-item" href="#s5">النطاق الإشرافي الإداري</a>
+  <a class="toc-item" href="#s6">التجمعات العمرانية المعتمدة من المخطط الاقليمي</a>
+  <a class="toc-item" href="#s7">التشكيل الطبوغرافي</a>
+  <a class="toc-item" href="#s8">المعالم التراثية</a>
+  <a class="toc-item" href="#s9">المخططات المعتمدة والمواقع الإستثمارية</a>
+</nav>
+</div>
+
+<script>
+const tocLinks=document.querySelectorAll('.toc-item');
+const sections=document.querySelectorAll('section[id]');
+const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)tocLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));});},{rootMargin:'-10% 0px -80% 0px',threshold:0});
+sections.forEach(s=>io.observe(s));
+const tocPanel=document.getElementById('toc'),tocOverlay=document.getElementById('toc-overlay'),tocToggle=document.getElementById('toc-toggle');
+const openToc=()=>{tocPanel.classList.add('open');tocOverlay.classList.add('open');tocToggle.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';};
+const closeToc=()=>{tocPanel.classList.remove('open');tocOverlay.classList.remove('open');tocToggle.setAttribute('aria-expanded','false');document.body.style.overflow='';};
+tocToggle.addEventListener('click',()=>tocPanel.classList.contains('open')?closeToc():openToc());
+tocOverlay.addEventListener('click',closeToc);
+tocLinks.forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=900)closeToc();}));
+
+const base={backgroundColor:'transparent',textStyle:{fontFamily:'Tajawal,sans-serif',color:'#3d6b62'},tooltip:{backgroundColor:'#fff',borderColor:'#c8dcd8',textStyle:{color:'#0D2420',fontFamily:'Tajawal,sans-serif'}},legend:{textStyle:{fontFamily:'Tajawal,sans-serif',color:'#0D2420'}}};
+const mk=id=>{const el=document.getElementById(id);return el?echarts.init(el,'',{renderer:'canvas'}):null;};
+
+const cA=mk('c-area');
+if(cA) cA.setOption({...base,legend:{...base.legend,bottom:8},series:[{type:'pie',radius:['40%','68%'],center:['50%','46%'],label:{formatter:'{b}\n{d}%',fontFamily:'Tajawal',fontSize:12},data:[{value:13.33,name:'خيبر',itemStyle:{color:'#1F6F5F'}},{value:86.67,name:'منطقة المدينة المنورة',itemStyle:{color:'#c8dcd8'}}]}]});
+
+const cP=mk('c-pop');
+if(cP) cP.setOption({...base,legend:{...base.legend,bottom:8},series:[{type:'pie',radius:['40%','68%'],center:['50%','46%'],label:{formatter:'{b}\n{d}%',fontFamily:'Tajawal',fontSize:12},data:[{value:2.13,name:'خيبر',itemStyle:{color:'#2FA084'}},{value:97.87,name:'منطقة المدينة المنورة',itemStyle:{color:'#c8dcd8'}}]}]});
+
+const cM=mk('c-municipal');
+if(cM) cM.setOption({...base,legend:{...base.legend,bottom:8},series:[{type:'pie',radius:['40%','68%'],center:['50%','46%'],label:{formatter:'{b}\n{d}%',fontFamily:'Tajawal',fontSize:12},data:[{value:36.90,name:'بلدية محافظة خيبر',itemStyle:{color:'#1F6F5F'}},{value:41.01,name:'بلدية العشاش',itemStyle:{color:'#2FA084'}},{value:22.09,name:'بلدية الصلصلة',itemStyle:{color:'#6FCF97'}}]}]});
+
+const cAb=mk('c-admin-bar');
+if(cAb) cAb.setOption({...base,grid:{containLabel:true,left:10,right:35,top:10,bottom:10},xAxis:{type:'value',splitLine:{lineStyle:{color:'#c8dcd8'}}},yAxis:{type:'category',axisLine:{show:false},axisLabel:{fontFamily:'Tajawal',fontSize:10},data:['مركز العرايد','مركز جدعاء','مركز العيينة','مركز الحفيرة','مركز عشرة','مركز العشاش','نطاق مدينة خيبر','مركز الثمد','مركز الصلصلة']},series:[{type:'bar',barMaxWidth:22,itemStyle:{borderRadius:[0,5,5,0],color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:'#1F6F5F'},{offset:1,color:'#6FCF97'}]}},data:[5.60,7.36,9.13,9.78,9.81,10.75,13.71,16.13,23.33],label:{show:true,position:'right',fontFamily:'Tajawal',fontSize:10,formatter:p=>p.value+'%'}}]});
+
+const cSR=mk('c-settle-region');
+if(cSR) cSR.setOption({...base,legend:{...base.legend,bottom:8},series:[{type:'pie',radius:['40%','68%'],center:['50%','46%'],label:{formatter:'{b}\n{d}%',fontFamily:'Tajawal',fontSize:12},data:[{value:7.36,name:'خيبر',itemStyle:{color:'#1F6F5F'}},{value:92.64,name:'منطقة المدينة المنورة',itemStyle:{color:'#c8dcd8'}}]}]});
+
+const cSS=mk('c-settle-status');
+if(cSS) cSS.setOption({...base,legend:{...base.legend,bottom:8},series:[{type:'pie',radius:['40%','68%'],center:['50%','44%'],label:{formatter:'{b}\n{d}%',fontFamily:'Tajawal',fontSize:10},data:[{value:2,name:'خارج نطاق العمل',itemStyle:{color:'#3d6b62'}},{value:43,name:'لم تستوفي مقومات التنمية',itemStyle:{color:'#1F6F5F'}},{value:15,name:'لها أحوزة معتمدة',itemStyle:{color:'#6FCF97'}},{value:3,name:'جاري اعتماد احوزة لها',itemStyle:{color:'#2FA084'}}]}]});
+
+const cMt=mk('c-mountains');
+if(cMt) cMt.setOption({...base,grid:{containLabel:true,left:20,right:20,top:20,bottom:20},xAxis:{type:'category',data:['بلدية العشاش','بلدية محافظة خيبر','بلدية الصلصلة'],axisLabel:{fontFamily:'Tajawal',fontSize:11},axisTick:{show:false},axisLine:{show:false}},yAxis:{type:'value',max:100,splitLine:{lineStyle:{color:'#c8dcd8'}}},series:[{type:'bar',barMaxWidth:70,itemStyle:{borderRadius:[6,6,0,0],color:p=>['#1F6F5F','#2FA084','#6FCF97'][p.dataIndex]},data:[80,39,29],label:{show:true,position:'top',fontFamily:'Tajawal',fontSize:15,fontWeight:'bold'}}]});
+
+const cH=mk('c-heritage');
+if(cH) cH.setOption({...base,legend:{...base.legend,bottom:8},series:[{type:'pie',radius:['40%','68%'],center:['50%','46%'],label:{formatter:'{b}\n{d}%',fontFamily:'Tajawal',fontSize:12},data:[{value:2,name:'بلدية العشاش',itemStyle:{color:'#6FCF97'}},{value:544,name:'بلدية محافظة خيبر',itemStyle:{color:'#1F6F5F'}},{value:43,name:'بلدية الصلصلة',itemStyle:{color:'#2FA084'}}]}]});
+
+/* 14 total: 47.83% × 14 ≈ 7 مدينة, 52.17% × 14 ≈ 7 قرى */
+const cPl=mk('c-plans');
+if(cPl) cPl.setOption({...base,legend:{...base.legend,bottom:8,formatter:name=>{const map={'داخل المدينة':'داخل المدينة (9)','داخل القرى':'داخل القرى (5)'};return map[name]||name;}},series:[{type:'pie',radius:['40%','68%'],center:['50%','42%'],label:{formatter:'{b}\n{d}%',fontFamily:'Tajawal',fontSize:12},data:[{value:9,name:'داخل المدينة',itemStyle:{color:'#1F6F5F'}},{value:5,name:'داخل القرى',itemStyle:{color:'#6FCF97'}}]}]});
+
+const all=[cA,cP,cM,cAb,cSR,cSS,cMt,cH,cPl];
+window.addEventListener('resize',()=>all.forEach(c=>{try{c&&c.resize();}catch(e){}}));
+</script>
+</body>
+</html>
